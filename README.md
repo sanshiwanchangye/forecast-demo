@@ -191,3 +191,25 @@ Body:
 - `404 NOT_FOUND`：用户或订单不存在
 - `409 CONFLICT`：幂等冲突、余额不足、重复结算等业务冲突
 - `500 INTERNAL_ERROR`：服务器内部异常
+
+
+
+## 前端演示页面
+
+项目包含一个简洁的前端演示页，用于直接调用后端接口并展示返回结果（含成功/失败提示）。
+
+启动后访问：
+- `http://localhost:3000`
+
+页面支持：
+- 充值（`POST /api/users/:id/deposit`）
+- 下注（`POST /api/bets`）
+- 结算（`POST /api/bets/:id/settle`）
+- 取消（`POST /api/bets/:id/cancel`）
+- 对账（`GET /api/admin/reconcile`）
+
+推荐演示顺序：
+1. 充值
+2. 下注（会得到 betId）
+3. 结算或取消
+4. 对账（验证 `balanceConsistent = true`）
