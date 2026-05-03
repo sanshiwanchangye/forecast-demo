@@ -1,0 +1,87 @@
+
+
+
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum BetStatus {
+  PLACED
+  SETTLED
+  CANCELLED
+}
+
+enum BetResult {
+  WIN
+  LOSE
+}
+
+enum LedgerType {
+  DEPOSIT
+  BET_DEBIT
+  BET_CREDIT
+  BET_REFUND
+}
+
+model User {
+  id        Int           @id @default(autoincrement())
+  username  String        @unique
+  balance   Int           @default(0)
+  createdAt DateTime      @default(now())
+
+  bets      Bet[]
+  ledgers   LedgerEntry[]
+}
+
+model Bet {
+  id        Int        @id @default(autoincrement())
+  userId    Int
+  gameId    String
+  amount    Int
+  status    BetStatus  @default(PLACED)
+  result    BetResult?
+  createdAt DateTime   @default(now())
+  settledAt DateTime?
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Restrict)
+  ledgers   LedgerEntry[]
+
+  @@index([userId, createdAt])
+  @@index([status])
+}
+
+model LedgerEntry {
+  id        Int        @id @default(autoincrement())
+  userId    Int
+  betId     Int?
+  type      LedgerType
+  amount    Int
+  ref       String?
+  createdAt DateTime   @default(now())
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Restrict)
+  bet       Bet?       @relation(fields: [betId], references: [id], onDelete: Restrict)
+
+  @@index([userId, createdAt])
+  @@index([betId, type])
+}
+
+model IdempotencyKey {
+  id           Int      @id @default(autoincrement())
+  scope        String
+  key          String
+  requestHash  String
+  statusCode   Int
+  responseJson String
+  createdAt    DateTime @default(now())
+
+  @@unique([scope, key])
+  @@index([createdAt])
+}
